@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -22,6 +23,12 @@ public class PlayerController : MonoBehaviour
     private float initialJumpVelocity;
     public float terminalSpeed;
     bool grounded = false;
+    
+    public float coyoteTime;
+    private IEnumerator coyoteTimeCoroutine;
+    bool canCoyoteJump = false;
+    bool coyoteJumping = false;
+    bool coyoteTimerStarted = false;
 
     public enum FacingDirection
     {
@@ -60,10 +67,15 @@ public class PlayerController : MonoBehaviour
         {
             movingRight = true;
         }
-        if (Input.GetKeyDown(KeyCode.Space) && grounded)
+        if (Input.GetKeyDown(KeyCode.Space) && (grounded || canCoyoteJump))
         {
             jumping = true;
+            coyoteJumping = true;
+            grounded = false;
+            canCoyoteJump = false;
         }
+
+        Debug.Log("can coyote jump: " + canCoyoteJump);
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -108,6 +120,13 @@ public class PlayerController : MonoBehaviour
             jumping = false;
         }
 
+        if (coyoteJumping && canCoyoteJump)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, initialJumpVelocity);
+
+            coyoteJumping = false;
+        }
+
         if (!grounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y + gravity * Time.fixedDeltaTime);
@@ -115,6 +134,15 @@ public class PlayerController : MonoBehaviour
             {
                 rb.velocity = new Vector2(rb.velocity.x, terminalSpeed);
             }
+        }
+
+        if(!grounded && !jumping && !coyoteTimerStarted)
+        {
+            coyoteTimeCoroutine = CoyoteTime(coyoteTime);
+
+            Debug.Log("can coyote");
+            StartCoroutine(coyoteTimeCoroutine);
+
         }
 
         if (!isMoving && speed > 0)
@@ -126,6 +154,18 @@ public class PlayerController : MonoBehaviour
 
         }
 
+    }
+
+    private IEnumerator CoyoteTime(float waitTime)
+    {
+        coyoteTimerStarted = true;
+        Debug.Log("coyote time started");
+        canCoyoteJump = true;
+
+        yield return new WaitForSeconds(waitTime);
+        coyoteTimerStarted = false;
+        canCoyoteJump = false;
+        Debug.Log("too late");
     }
 
     public bool IsWalking()
