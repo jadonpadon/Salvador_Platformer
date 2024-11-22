@@ -1,12 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
     private Rigidbody2D rb;
     private new Collider2D collider;
-    public float speed;
+    private bool movingLeft = false;
+    private bool movingRight = false;
+    public float maxSpeed;
+    public float accelerationTime;
+    public float decelerationTime;
+    float speed;
+    Vector2 lastDirectionV2 = Vector2.zero;
+
+    private bool jumping = false;
+    public float apexHeight;
+    public float apexTime;
+    private float gravity;
+    private float initialJumpVelocity;
+    bool grounded = false;
 
     public enum FacingDirection
     {
@@ -19,35 +33,94 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        initialJumpVelocity = 2 * apexHeight / apexTime;
+        gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
+
         rb = GetComponent<Rigidbody2D>();
         collider = GetComponent<Collider2D>();
     }
 
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
         //manage the actual movement of the character.
         Vector2 playerInput = new Vector2();
         MovementUpdate(playerInput);
+    }
 
-        
+    private void Update()
+    {
+        if (Input.GetKey(KeyCode.A))
+        {
+            movingLeft = true;
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            movingRight = true;
+        }
+        if (Input.GetKeyDown(KeyCode.Space) && grounded)
+        {
+            jumping = true;
+        }
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        if (Input.GetKey(KeyCode.A))
+        float acceleration = maxSpeed / accelerationTime;
+        float deceleration = maxSpeed / decelerationTime;
+
+        if (speed > maxSpeed)
         {
-            playerInput = Vector2.left;
-            lastDirection = FacingDirection.left;
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            playerInput = Vector2.right;
-            lastDirection = FacingDirection.right;
+            speed = maxSpeed;
         }
 
-        rb.velocity = new Vector2(playerInput.x * speed, rb.velocity.y);
+        bool isMoving = false;
+
+
+        if (movingLeft)
+        {
+            speed += acceleration * Time.deltaTime;
+            playerInput = Vector2.left;
+            lastDirectionV2 = Vector2.left;
+            rb.velocity = new Vector2(playerInput.x * speed, rb.velocity.y);
+            lastDirection = FacingDirection.left;
+            isMoving = true;
+
+            movingLeft = false;
+        }
+        if (movingRight)
+        {
+            speed += acceleration * Time.deltaTime;
+            playerInput = Vector2.right;
+            lastDirectionV2 = Vector2.right;
+            rb.velocity = new Vector2(playerInput.x * speed, rb.velocity.y);
+            lastDirection = FacingDirection.right;
+            isMoving = true;
+
+            movingRight = false;
+        }
+        if (jumping && grounded)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, initialJumpVelocity);
+
+            jumping = false;
+        }
+
+        if (!grounded)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y + gravity * Time.fixedDeltaTime);
+        }
+
+        if (!isMoving && speed > 0)
+        {
+            speed -= deceleration * Time.fixedDeltaTime;
+            if (speed < 0) speed = 0;
+
+            rb.velocity = new Vector2(lastDirectionV2.x * speed, rb.velocity.y);
+
+        }
+
     }
 
     public bool IsWalking()
@@ -67,11 +140,12 @@ public class PlayerController : MonoBehaviour
         
         if (hit)
         {
+            grounded = true;
             return true;
         }
         else
         {
-            Debug.Log("in air");
+            grounded = false;
             return false;
         }
 
