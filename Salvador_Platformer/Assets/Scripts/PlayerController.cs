@@ -71,6 +71,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
+            Debug.Log("in air");
             return false;
         }
 
