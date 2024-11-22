@@ -1693,7 +1693,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a1ce42ea3e3dd44868493ae73ec06d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 7
+  maxSpeed: 7
+  accelerationTime: 0.2
+  decelerationTime: 0.1
+  apexHeight: 3.5
+  apexTime: 0.35
+  terminalSpeed: -5
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -1788,7 +1793,7 @@ Rigidbody2D:
   m_Mass: 1
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2

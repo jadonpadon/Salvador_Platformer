@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour
     public float apexTime;
     private float gravity;
     private float initialJumpVelocity;
+    public float terminalSpeed;
     bool grounded = false;
 
     public enum FacingDirection
@@ -110,6 +111,10 @@ public class PlayerController : MonoBehaviour
         if (!grounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y + gravity * Time.fixedDeltaTime);
+            if (rb.velocity.y < terminalSpeed)
+            {
+                rb.velocity = new Vector2(rb.velocity.x, terminalSpeed);
+            }
         }
 
         if (!isMoving && speed > 0)
