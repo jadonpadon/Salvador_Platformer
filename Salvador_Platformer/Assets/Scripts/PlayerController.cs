@@ -67,15 +67,31 @@ public class PlayerController : MonoBehaviour
         {
             movingRight = true;
         }
-        if (Input.GetKeyDown(KeyCode.Space) && (grounded || canCoyoteJump))
+        if (Input.GetKeyDown(KeyCode.Space) && grounded && !canCoyoteJump)
         {
             jumping = true;
-            coyoteJumping = true;
-            grounded = false;
             canCoyoteJump = false;
         }
 
-        Debug.Log("can coyote jump: " + canCoyoteJump);
+        if (Input.GetKeyDown(KeyCode.Space) && !coyoteJumping && canCoyoteJump)
+        {
+            coyoteJumping = true;
+        }
+
+        if (canCoyoteJump)
+        {
+            print("can coyote jump");
+        }
+
+        if (jumping)
+        {
+            print("jumping");
+        }
+
+        if (coyoteJumping)
+        {
+            print ("coyote jumping");
+        }
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -116,34 +132,43 @@ public class PlayerController : MonoBehaviour
         if (jumping && grounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, initialJumpVelocity);
-
-            jumping = false;
         }
 
         if (coyoteJumping && canCoyoteJump)
         {
             rb.velocity = new Vector2(rb.velocity.x, initialJumpVelocity);
 
-            coyoteJumping = false;
+            canCoyoteJump = false;
         }
 
         if (!grounded)
         {
+            //stop coyote timer
+
+            coyoteTimerStarted = false;
+
+            //gravity
+
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y + gravity * Time.fixedDeltaTime);
             if (rb.velocity.y < terminalSpeed)
             {
                 rb.velocity = new Vector2(rb.velocity.x, terminalSpeed);
             }
         }
+        else if (grounded)
+        {
+            coyoteJumping = false;
+            jumping = false;
+        }
 
-        if(!grounded && !jumping && !coyoteTimerStarted)
+        if (!grounded && !jumping && !coyoteTimerStarted && !coyoteJumping)
         {
             coyoteTimeCoroutine = CoyoteTime(coyoteTime);
 
-            Debug.Log("can coyote");
             StartCoroutine(coyoteTimeCoroutine);
 
         }
+
 
         if (!isMoving && speed > 0)
         {
@@ -159,13 +184,11 @@ public class PlayerController : MonoBehaviour
     private IEnumerator CoyoteTime(float waitTime)
     {
         coyoteTimerStarted = true;
-        Debug.Log("coyote time started");
         canCoyoteJump = true;
 
         yield return new WaitForSeconds(waitTime);
         coyoteTimerStarted = false;
         canCoyoteJump = false;
-        Debug.Log("too late");
     }
 
     public bool IsWalking()
