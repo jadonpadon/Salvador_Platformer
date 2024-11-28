@@ -92,6 +92,11 @@ public class PlayerController : MonoBehaviour
         {
             print ("coyote jumping");
         }
+        
+        if (grounded)
+        {
+            print("grounded");
+        }
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -146,7 +151,7 @@ public class PlayerController : MonoBehaviour
             //stop coyote timer
 
             coyoteTimerStarted = false;
-
+            
             //gravity
 
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y + gravity * Time.fixedDeltaTime);
