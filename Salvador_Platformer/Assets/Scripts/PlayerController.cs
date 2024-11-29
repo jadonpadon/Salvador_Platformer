@@ -22,7 +22,6 @@ public class PlayerController : MonoBehaviour
     private float gravity;
     private float initialJumpVelocity;
     public float terminalSpeed;
-    bool grounded = false;
     
     public float coyoteTime;
     private IEnumerator coyoteTimeCoroutine;
@@ -30,10 +29,20 @@ public class PlayerController : MonoBehaviour
     bool coyoteJumping = false;
     bool coyoteTimerStarted = false;
 
+    public int currentHealth;
+
     public enum FacingDirection
     {
         left, right
     }
+
+    public enum CharacterState
+    {
+        idle, walk, jump, die
+    }
+    public CharacterState currentState = CharacterState.idle;
+    public CharacterState previousState = CharacterState.idle;
+
 
     private FacingDirection lastDirection;
     public LayerMask groundLayer;
@@ -59,6 +68,53 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        previousState = currentState;
+
+        if (IsDead())
+        {
+            currentState = CharacterState.die;
+        }
+
+        switch (currentState)
+        {
+            case CharacterState.idle:
+                if (IsWalking())
+                {
+                    currentState = CharacterState.walk;
+                }
+                if (!IsGrounded())
+                {
+                    currentState = CharacterState.jump;
+                }
+                break;
+            case CharacterState.walk:
+                if (!IsWalking())
+                {
+                    currentState = CharacterState.idle;
+                }
+                if (!IsGrounded())
+                {
+                    currentState = CharacterState.jump;
+                }
+                break;
+            case CharacterState.jump:
+                if (IsGrounded())
+                {
+                    if (IsWalking())
+                    {
+                        currentState = CharacterState.walk;
+                    }
+                    else
+                    {
+                        currentState = CharacterState.idle;
+                    }
+                }
+                break;
+            case CharacterState.die:
+
+                break;
+        }
+
         if (Input.GetKey(KeyCode.A))
         {
             movingLeft = true;
@@ -67,7 +123,7 @@ public class PlayerController : MonoBehaviour
         {
             movingRight = true;
         }
-        if (Input.GetKeyDown(KeyCode.Space) && grounded && !canCoyoteJump)
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() && !canCoyoteJump)
         {
             jumping = true;
             canCoyoteJump = false;
@@ -93,10 +149,6 @@ public class PlayerController : MonoBehaviour
             print ("coyote jumping");
         }
         
-        if (grounded)
-        {
-            print("grounded");
-        }
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -134,7 +186,7 @@ public class PlayerController : MonoBehaviour
 
             movingRight = false;
         }
-        if (jumping && grounded)
+        if (jumping && IsGrounded())
         {
             rb.velocity = new Vector2(rb.velocity.x, initialJumpVelocity);
         }
@@ -146,12 +198,8 @@ public class PlayerController : MonoBehaviour
             canCoyoteJump = false;
         }
 
-        if (!grounded)
+        if (!IsGrounded())
         {
-            //stop coyote timer
-
-            coyoteTimerStarted = false;
-            
             //gravity
 
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y + gravity * Time.fixedDeltaTime);
@@ -160,13 +208,14 @@ public class PlayerController : MonoBehaviour
                 rb.velocity = new Vector2(rb.velocity.x, terminalSpeed);
             }
         }
-        else if (grounded)
+        else if (IsGrounded())
         {
             coyoteJumping = false;
             jumping = false;
+            coyoteTimerStarted = false;
         }
 
-        if (!grounded && !jumping && !coyoteTimerStarted && !coyoteJumping)
+        if (!IsGrounded() && !jumping && !coyoteTimerStarted && !coyoteJumping)
         {
             coyoteTimeCoroutine = CoyoteTime(coyoteTime);
 
@@ -209,19 +258,27 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.BoxCast(collider.bounds.center, collider.bounds.size, 0f, Vector2.down, 0.1f, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.down, 0.6f, groundLayer);
         
         if (hit)
         {
-            grounded = true;
             return true;
         }
         else
         {
-            grounded = false;
             return false;
         }
 
+    }
+
+    public bool IsDead()
+    {
+        return currentHealth <= 0;
+    }
+
+    public void OnDeathAnimationComplete()
+    {
+        gameObject.SetActive(false);
     }
 
     public FacingDirection GetFacingDirection()

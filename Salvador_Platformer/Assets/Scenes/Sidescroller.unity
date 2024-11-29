@@ -1700,6 +1700,9 @@ MonoBehaviour:
   apexTime: 0.35
   terminalSpeed: -5
   coyoteTime: 1
+  currentHealth: 10
+  currentState: 0
+  previousState: 0
   groundLayer:
     serializedVersion: 2
     m_Bits: 64
