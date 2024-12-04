@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using Unity.VisualScripting;
+using UnityEditor.XR;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -31,6 +32,14 @@ public class PlayerController : MonoBehaviour
 
     public int currentHealth;
 
+    bool dashed = false;
+    Vector2 currentPos;
+    Vector2 dashDestination;
+    public float dashDistance;
+    public float dashSpeed;
+    float distance2destination;
+    float storeMaxSpeed;
+
     public enum FacingDirection
     {
         left, right
@@ -52,6 +61,8 @@ public class PlayerController : MonoBehaviour
     {
         initialJumpVelocity = 2 * apexHeight / apexTime;
         gravity = -2 * apexHeight / (Mathf.Pow(apexTime, 2));
+
+        distance2destination = Vector2.Distance(currentPos, dashDestination);
 
         rb = GetComponent<Rigidbody2D>();
         collider = GetComponent<Collider2D>();
@@ -134,21 +145,16 @@ public class PlayerController : MonoBehaviour
             coyoteJumping = true;
         }
 
-        if (canCoyoteJump)
+        if (Input.GetMouseButtonDown(0))
         {
-            print("can coyote jump");
+            dashed = true;
+            currentPos = rb.position;
+            dashDestination = currentPos + lastDirectionV2.normalized * dashDistance; 
+            storeMaxSpeed = maxSpeed;
+
+            print("dashed");
         }
 
-        if (jumping)
-        {
-            print("jumping");
-        }
-
-        if (coyoteJumping)
-        {
-            print ("coyote jumping");
-        }
-        
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -226,11 +232,47 @@ public class PlayerController : MonoBehaviour
 
         if (!isMoving && speed > 0)
         {
+            //decelerate
+            
             speed -= deceleration * Time.fixedDeltaTime;
             if (speed < 0) speed = 0;
 
             rb.velocity = new Vector2(lastDirectionV2.x * speed, rb.velocity.y);
 
+        }
+
+        if (dashed)
+        {
+            // Calculate distance to destination
+            distance2destination = Vector2.Distance(rb.position, dashDestination);
+
+            if (distance2destination > 0.1f)
+            {
+                // Execute dash
+                maxSpeed *= dashSpeed;
+                rb.velocity = lastDirectionV2.normalized * maxSpeed;
+            }
+            else
+            {
+                // Reset speed and stop dashing
+                maxSpeed = storeMaxSpeed;
+                dashed = false;
+            }
+
+        }
+
+    }
+
+    private void Dash()
+    {
+        storeMaxSpeed = maxSpeed;
+        
+        maxSpeed *= dashSpeed;
+        rb.velocity = new Vector2(lastDirectionV2.x * maxSpeed, rb.velocity.y);
+        
+        if (distance2destination < 0.1f)
+        {
+            maxSpeed = storeMaxSpeed;
         }
 
     }

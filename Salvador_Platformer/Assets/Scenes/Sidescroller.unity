@@ -1693,7 +1693,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86a1ce42ea3e3dd44868493ae73ec06d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSpeed: 7
+  maxSpeed: 3
   accelerationTime: 0.2
   decelerationTime: 0.1
   apexHeight: 3.5
@@ -1701,6 +1701,8 @@ MonoBehaviour:
   terminalSpeed: -5
   coyoteTime: 1
   currentHealth: 10
+  dashDistance: 4
+  dashSpeed: 5
   currentState: 0
   previousState: 0
   groundLayer:
@@ -1808,7 +1810,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 6
 --- !u!1 &1598075209
 GameObject:
   m_ObjectHideFlags: 0
