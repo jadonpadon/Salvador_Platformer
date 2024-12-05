@@ -1701,8 +1701,8 @@ MonoBehaviour:
   terminalSpeed: -5
   coyoteTime: 1
   currentHealth: 10
-  dashDistance: 4
-  dashSpeed: 5
+  dashDistance: 2
+  dashTime: 0.2
   currentState: 0
   previousState: 0
   groundLayer:
@@ -1810,7 +1810,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 6
+  m_Constraints: 4
 --- !u!1 &1598075209
 GameObject:
   m_ObjectHideFlags: 0
