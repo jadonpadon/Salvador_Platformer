@@ -143,7 +143,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //normal jump
-        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() && !canCoyoteJump)
+        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
         {
             jumping = true;
             canCoyoteJump = false;
@@ -153,13 +153,13 @@ public class PlayerController : MonoBehaviour
         //wall jump
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (wallJumpTime > Time.time && Input.GetKeyDown(KeyCode.Space) && (TouchingLeftWall() || TouchingRightWall()))
+            if (wallJumpTime > Time.deltaTime && Input.GetKeyDown(KeyCode.Space) && (TouchingLeftWall() || TouchingRightWall()))
             {
                 wallJump = true;
             }
             else
             {
-                wallJumpTime = Time.time + 1f;
+                wallJumpTime = Time.deltaTime + 1f;
             }
         }
 
@@ -177,14 +177,14 @@ public class PlayerController : MonoBehaviour
         {
             canLaunch = false;
             launching = true;
-            if (launchTime > Time.time && Input.GetMouseButtonDown(1) && !IsGrounded())
+            if (launchTime > Time.deltaTime && Input.GetMouseButtonDown(1) && !IsGrounded())
             {
                 rb.constraints = RigidbodyConstraints2D.FreezePositionX;
 
             }
             else
             {
-                launchTime = Time.time + 1f;
+                launchTime = Time.deltaTime + 1f;
             }
 
         }

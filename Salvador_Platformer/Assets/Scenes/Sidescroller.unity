@@ -1698,7 +1698,7 @@ MonoBehaviour:
   decelerationTime: 0.3
   apexHeight: 3.5
   apexTime: 0.35
-  terminalSpeed: -15
+  terminalSpeed: -5
   coyoteTime: 1
   currentHealth: 10
   dashDistance: 4
