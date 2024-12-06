@@ -1704,6 +1704,9 @@ MonoBehaviour:
   dashDistance: 4
   dashTime: 0.2
   wallJumpX: 8
+  launchDistance: 5
+  launchTime: 1
+  launchParameters: {x: 5, y: 20}
   currentState: 0
   previousState: 0
   groundLayer:

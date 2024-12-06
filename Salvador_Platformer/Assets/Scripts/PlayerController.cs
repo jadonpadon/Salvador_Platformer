@@ -40,6 +40,13 @@ public class PlayerController : MonoBehaviour
     public float wallJumpX;
     float wallJumpTime;
 
+    bool launching; 
+    public float launchDistance;
+    public float launchTime;
+    public Vector2 launchParameters;
+    bool canLaunch = false;
+    RigidbodyConstraints2D originalConstraints;
+
     public enum FacingDirection
     {
         left, right
@@ -64,6 +71,8 @@ public class PlayerController : MonoBehaviour
 
         rb = GetComponent<Rigidbody2D>();
         collider = GetComponent<Collider2D>();
+
+        originalConstraints = rb.constraints;
     }
 
     // Update is called once per frame
@@ -164,14 +173,20 @@ public class PlayerController : MonoBehaviour
             dashed = true;
         }
 
-        if (TouchingLeftWall())
+        if (Input.GetMouseButtonDown(1) && canLaunch)
         {
-            print("left wall");
-        }
+            canLaunch = false;
+            launching = true;
+            if (launchTime > Time.time && Input.GetMouseButtonDown(1) && !IsGrounded())
+            {
+                rb.constraints = RigidbodyConstraints2D.FreezePositionX;
 
-        if (TouchingRightWall())
-        {
-            print("right wall");
+            }
+            else
+            {
+                launchTime = Time.time + 1f;
+            }
+
         }
 
     }
@@ -238,6 +253,9 @@ public class PlayerController : MonoBehaviour
             coyoteJumping = false;
             jumping = false;
             coyoteTimerStarted = false;
+            //unfreeze when landed from launch
+            rb.constraints = originalConstraints;
+            canLaunch = true;
         }
 
         if (!IsGrounded() && !jumping && !coyoteTimerStarted && !coyoteJumping)
@@ -276,11 +294,15 @@ public class PlayerController : MonoBehaviour
 
         if (wallJump)
         {
-            print("wall jumped");
-
             rb.velocity = new Vector2(-lastDirectionV2.x * wallJumpX, initialJumpVelocity);
 
             wallJump = false;
+        }
+
+        if (launching)
+        {
+            rb.AddForce(new Vector2(lastDirectionV2.x * launchParameters.x * launchDistance, launchParameters.y), ForceMode2D.Impulse);
+            launching = false;
         }
     }
 
