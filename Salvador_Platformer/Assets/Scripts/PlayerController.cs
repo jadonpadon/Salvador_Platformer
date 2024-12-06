@@ -17,7 +17,8 @@ public class PlayerController : MonoBehaviour
     float speed;
     Vector2 lastDirectionV2 = Vector2.zero;
 
-    private bool jumping = false;
+    private bool isJumpTriggered = false;
+    private bool jumpedAndInAir;
     public float apexHeight;
     public float apexTime;
     private float gravity;
@@ -143,17 +144,19 @@ public class PlayerController : MonoBehaviour
         }
 
         //normal jump
-        if (Input.GetKeyDown(KeyCode.Space) && IsGrounded())
-        {
-            jumping = true;
-            canCoyoteJump = false;
-
-        }
-
-        //wall jump
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (wallJumpTime > Time.deltaTime && Input.GetKeyDown(KeyCode.Space) && (TouchingLeftWall() || TouchingRightWall()))
+            if(!coyoteJumping && canCoyoteJump) //coyote jump
+            {
+                coyoteJumping = true;
+            }
+            if (IsGrounded()) //normal jump
+            {
+                isJumpTriggered = true;
+                canCoyoteJump = false;
+            }
+
+            if (wallJumpTime > Time.deltaTime && Input.GetKeyDown(KeyCode.Space) && (TouchingLeftWall() || TouchingRightWall())) // wall jump
             {
                 wallJump = true;
             }
@@ -161,11 +164,6 @@ public class PlayerController : MonoBehaviour
             {
                 wallJumpTime = Time.deltaTime + 1f;
             }
-        }
-
-        if (Input.GetKeyDown(KeyCode.Space) && !coyoteJumping && canCoyoteJump)
-        {
-            coyoteJumping = true;
         }
 
         if (Input.GetMouseButtonDown(0))
@@ -226,9 +224,11 @@ public class PlayerController : MonoBehaviour
 
             movingRight = false;
         }
-        if (jumping && IsGrounded())
+        if (isJumpTriggered)
         {
+            print("jumping");
             rb.velocity = new Vector2(rb.velocity.x, initialJumpVelocity);
+            isJumpTriggered = false;
         }
 
         if (coyoteJumping && canCoyoteJump)
@@ -251,14 +251,16 @@ public class PlayerController : MonoBehaviour
         else if (IsGrounded())
         {
             coyoteJumping = false;
-            jumping = false;
+
+
+
             coyoteTimerStarted = false;
             //unfreeze when landed from launch
             rb.constraints = originalConstraints;
             canLaunch = true;
         }
 
-        if (!IsGrounded() && !jumping && !coyoteTimerStarted && !coyoteJumping)
+        if (!IsGrounded() && !coyoteTimerStarted && !coyoteJumping)
         {
             coyoteTimeCoroutine = CoyoteTime(coyoteTime);
 
@@ -329,7 +331,7 @@ public class PlayerController : MonoBehaviour
     }
     public bool IsGrounded()
     {
-        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.down, 0.6f, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.down, 0.8f, groundLayer);
         
         if (hit)
         {
@@ -344,7 +346,7 @@ public class PlayerController : MonoBehaviour
 
     public bool TouchingLeftWall()
     {
-        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.left, 0.6f, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.left, 0.8f, groundLayer);
 
         if (hit)
         {
@@ -359,7 +361,7 @@ public class PlayerController : MonoBehaviour
 
     public bool TouchingRightWall()
     {
-        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.right, 0.6f, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.right, 0.8f, groundLayer);
 
         if (hit)
         {

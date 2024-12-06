@@ -11,6 +11,7 @@ public class PlayerVisuals : MonoBehaviour
     public Animator animator;
     public SpriteRenderer bodyRenderer;
     public PlayerController playerController;
+    public CameraController cameraController;
 
     private int isWalkingHash, isGroundedHash, onDieHash;
 
