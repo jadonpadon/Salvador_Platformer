@@ -36,6 +36,10 @@ public class PlayerController : MonoBehaviour
     public float dashDistance;
     public float dashTime;
 
+    bool wallJump;
+    public float wallJumpX;
+    float wallJumpTime;
+
     public enum FacingDirection
     {
         left, right
@@ -120,18 +124,34 @@ public class PlayerController : MonoBehaviour
                 break;
         }
 
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.A) && !TouchingLeftWall())
         {
             movingLeft = true;
         }
-        if (Input.GetKey(KeyCode.D))
+        if (Input.GetKey(KeyCode.D) && !TouchingRightWall())
         {
             movingRight = true;
         }
+
+        //normal jump
         if (Input.GetKeyDown(KeyCode.Space) && IsGrounded() && !canCoyoteJump)
         {
             jumping = true;
             canCoyoteJump = false;
+
+        }
+
+        //wall jump
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if (wallJumpTime > Time.time && Input.GetKeyDown(KeyCode.Space) && (TouchingLeftWall() || TouchingRightWall()))
+            {
+                wallJump = true;
+            }
+            else
+            {
+                wallJumpTime = Time.time + 1f;
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.Space) && !coyoteJumping && canCoyoteJump)
@@ -142,6 +162,16 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             dashed = true;
+        }
+
+        if (TouchingLeftWall())
+        {
+            print("left wall");
+        }
+
+        if (TouchingRightWall())
+        {
+            print("right wall");
         }
 
     }
@@ -243,6 +273,15 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(playerInput.x * speed, rb.velocity.y);
             dashed = false;
         }
+
+        if (wallJump)
+        {
+            print("wall jumped");
+
+            rb.velocity = new Vector2(-lastDirectionV2.x * wallJumpX, initialJumpVelocity);
+
+            wallJump = false;
+        }
     }
 
     private IEnumerator CoyoteTime(float waitTime)
@@ -270,6 +309,36 @@ public class PlayerController : MonoBehaviour
     {
         RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.down, 0.6f, groundLayer);
         
+        if (hit)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
+    public bool TouchingLeftWall()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.left, 0.6f, groundLayer);
+
+        if (hit)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
+    public bool TouchingRightWall()
+    {
+        RaycastHit2D hit = Physics2D.Raycast(collider.bounds.center, Vector2.right, 0.6f, groundLayer);
+
         if (hit)
         {
             return true;
