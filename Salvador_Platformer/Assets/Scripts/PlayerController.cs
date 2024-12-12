@@ -143,17 +143,15 @@ public class PlayerController : MonoBehaviour
             movingRight = true;
         }
 
-        //normal jump
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if(!coyoteJumping && canCoyoteJump) //coyote jump
             {
-                coyoteJumping = true;
+                isJumpTriggered = true;
             }
             if (IsGrounded()) //normal jump
             {
                 isJumpTriggered = true;
-                canCoyoteJump = false;
             }
 
             if (wallJumpTime > Time.deltaTime && Input.GetKeyDown(KeyCode.Space) && (TouchingLeftWall() || TouchingRightWall())) // wall jump
@@ -226,16 +224,10 @@ public class PlayerController : MonoBehaviour
         }
         if (isJumpTriggered)
         {
-            print("jumping");
+            StartCoroutine(CheckIfJumping(0.5f));
+
             rb.velocity = new Vector2(rb.velocity.x, initialJumpVelocity);
             isJumpTriggered = false;
-        }
-
-        if (coyoteJumping && canCoyoteJump)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, initialJumpVelocity);
-
-            canCoyoteJump = false;
         }
 
         if (!IsGrounded())
@@ -316,6 +308,17 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(waitTime);
         coyoteTimerStarted = false;
         canCoyoteJump = false;
+    }
+
+    private IEnumerator CheckIfJumping(float jumpTime)
+    {
+        if (!IsGrounded())
+        {
+            canCoyoteJump = false;
+            print("in air");
+        }
+        yield return new WaitForSeconds(jumpTime);
+
     }
 
     public bool IsWalking()
